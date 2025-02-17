@@ -59,6 +59,8 @@ struct BiDirectionStations {
 
 class SubwayGraph : public QObject
 {
+    Q_OBJECT
+
 public:
     // 邻接表
     using Graph = QHash<QString, QList<Edge>>;
@@ -85,6 +87,9 @@ public:
 
     // 找不到返回空智能指针，安全性？
     QSharedPointer<StationNode> getNode(const QString& name) const;
+    const Stations& getStations() const { return m_stations; }
+    const Graph& getGraph() const { return m_graph; }
+    const Lines& getLines() const { return m_lines; }
 
     bool addNode(const StationNodeParam& param, const MultiBiDirectionStations& biStations, QString& err_msg);
 
@@ -94,13 +99,11 @@ public:
     bool build(const StationNodeParams& stationParams, const LineNames& lines
                , const LineDistances& distances, QString& err_msg);
 
+    void clear();
+
     Path dfs() const;
 
-    Path bfs() const;
-
-    const Stations& getStations() const { return m_stations; }
-    const Graph& getGraph() const { return m_graph; }
-    const Lines& getLines() const { return m_lines; }
+    Path bfs() const;   
 
 private:
     bool buildStations(const StationNodeParams& stationParams,QString& err_msg);

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resource/data/wuhanmetro.json</file>
+    </qresource>
+</RCC>

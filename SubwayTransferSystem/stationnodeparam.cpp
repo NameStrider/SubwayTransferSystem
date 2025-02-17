@@ -19,16 +19,19 @@ StationNodeParam::StationNodeParam(const StationNodeParam &other)
     , belongingLines(other.belongingLines)
 {}
 
-bool StationNodeParam::isValid(const StationNodeParam &param)
+bool StationNodeParam::isValid() const
 {
-    if (param.longitude < MIN_LONGITUDE
-        || param.longitude > MAX_LONGITUDE
-        || param.latitude < MIN_LATITUDE
-        || param.latitude > MAX_LATITUDE)
+    if (longitude < MIN_LONGITUDE)
+        return false;
+    else if (longitude > MAX_LONGITUDE)
+        return false;
+    else if (latitude < MIN_LATITUDE)
+        return false;
+    else if (latitude > MAX_LATITUDE)
         return false;
 
-    if (param.stayTime < MIN_STAY_TIME
-        || param.stayTime > MAX_STAY_TIME)
+    if (stayTime < MIN_STAY_TIME
+        || stayTime > MAX_STAY_TIME)
         return false;
 
     return true;

@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "subwaygraph.h"
+#include "jsonparser.h"
 #include <QDebug>
 
 #include <QApplication>
@@ -63,6 +64,49 @@ int main(int argc, char *argv[])
     }
     else {
         qDebug() << err_msg;
+    }
+
+    subwayGraph.clear();
+    printSubwayGraph(subwayGraph);
+
+    lineNames.clear();
+    lineDistances.clear();
+    params.clear();
+    JsonParser::getJsonParserInstance().setSubwayGraph(&subwayGraph);
+    if (JsonParser::getJsonParserInstance().parse(err_msg) != true) {
+        qDebug() << err_msg;
+    }
+    else {
+        lineNames = JsonParser::getJsonParserInstance().m_lineNames;
+        lineDistances = JsonParser::getJsonParserInstance().m_lineDistances;
+        params = JsonParser::getJsonParserInstance().m_stationNodeParams;
+        if (subwayGraph.build(params, lineNames, lineDistances, err_msg) != true) {
+            qDebug() << err_msg;
+
+            QStringList context;
+            for (const auto& it : lineNames) {
+                for (const QString& name : it) {
+                    context << name;
+                }
+                qDebug() << context.join(" ");
+                context.clear();
+            }           
+
+            for (const auto& it : lineDistances) {
+                for (const int& distance : it) {
+                    context << QString::number(distance);
+                }
+                qDebug() << context.join(" ");
+                context.clear();
+            }           
+
+            for (const auto& param : params) {
+                qDebug() << param.name << param.longitude << param.latitude << param.stayTime;
+            }
+        }
+        else {
+           printSubwayGraph(subwayGraph);
+        }
     }
 
     return a.exec();

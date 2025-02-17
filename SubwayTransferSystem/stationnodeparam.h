@@ -14,7 +14,7 @@ public:
     StationNodeParam(const StationNodeParam& other);
     StationNodeParam& operator=(const StationNodeParam& other);
 
-    static bool isValid(const StationNodeParam& param);
+    bool isValid() const;
 
     QString name;
     double longitude;

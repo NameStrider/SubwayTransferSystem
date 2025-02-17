@@ -1,0 +1,44 @@
+{
+  "stations": [
+    {
+      "name": "A",
+      "latitude": 30.0000,
+      "longitude": 114.0000,
+      "stayTime": 2,
+      "belongingLines": [1]
+    },
+    {
+      "name": "B",
+      "latitude": 31.0000,
+      "longitude": 115.0000,
+      "stayTime": 2,
+      "belongingLines": [1, 2]
+    },
+    {
+      "name": "C",
+      "latitude": 32.0000,
+      "longitude": 116.0000,
+      "stayTime": 2,
+      "belongingLines": [2]
+    },
+    {
+      "name": "D",
+      "latitude": 33.0000,
+      "longitude": 117.0000,
+      "stayTime": 2,
+      "belongingLines": [2]
+    }
+  ],
+  "lines": [
+    {
+      "id": 1,
+      "stations": ["A", "B"],
+      "distances": [3]
+    },
+    {
+      "id": 2,
+      "stations": ["C", "B", "D"],
+      "distances": [2, 3]
+    }
+  ]
+}

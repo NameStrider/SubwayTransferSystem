@@ -23,7 +23,7 @@ bool SubwayGraph::addNode(const StationNodeParam& param, const MultiBiDirectionS
         err_msg = QString("add node %1 failed as node count reached maximum limit").arg(param.name);
         return false;
     }
-    if (!StationNodeParam::isValid(param)) {
+    if (!param.isValid()) {
         err_msg = QString("add node %1 failed as param invalid").arg(param.name);
         return false;
     }
@@ -107,6 +107,13 @@ bool SubwayGraph::build(const SubwayGraph::StationNodeParams &stationParams, con
         || buildGraph(distances, err_msg) != true)
         return false;
     return true;
+}
+
+void SubwayGraph::clear()
+{
+    m_graph.clear();
+    m_stations.clear();
+    m_lines.clear();
 }
 
 SubwayGraph::Path SubwayGraph::dfs() const
@@ -226,7 +233,7 @@ bool SubwayGraph::addNodeToSet(const StationNodeParam& param)
         return false;
 
     // 参数判断
-    if (!StationNodeParam::isValid(param))
+    if (!param.isValid())
         return false;
 
     if (m_stations.find(param.name) != m_stations.end())
