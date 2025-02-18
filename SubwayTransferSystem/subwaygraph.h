@@ -83,7 +83,7 @@ public:
 
     using MultiBiDirectionStations = QHash<int, BiDirectionStations>;
 
-    SubwayGraph(QObject* parent = nullptr);
+    explicit SubwayGraph(QObject* parent = nullptr);
 
     // 找不到返回空智能指针，安全性？
     QSharedPointer<StationNode> getNode(const QString& name) const;
