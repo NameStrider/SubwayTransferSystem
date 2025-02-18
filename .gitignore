@@ -8,5 +8,6 @@
 
 *.pro
 *.pro.user
+*.autosave
 
 build-SubwayTransferSystem-Desktop_Qt_5_14_2_MinGW_64_bit-Debug/
