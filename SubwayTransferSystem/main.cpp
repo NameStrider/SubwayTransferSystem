@@ -4,12 +4,15 @@
 #include "networkmanager.h"
 #include <QApplication>
 
+#define NETWORK_TEST
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
 
+#ifdef SUBWAY_GRAPH_TEST
     SubwayGraph::StationNodeParams params;
     StationNodeParam paramA{"A", 120.0000, 30.0000, 3, QSet<int>{1, 4}};
     StationNodeParam paramB{"B", 121.0000, 31.0000, 3, QSet<int>{1, 2}};
@@ -107,6 +110,13 @@ int main(int argc, char *argv[])
            printSubwayGraph(subwayGraph);
         }
     }
+#endif
+
+#ifdef NETWORK_TEST
+    NetworkManager networkManager;
+    QUrl url("http://wh.bendibao.com/ditie/linemap.shtml");
+    networkManager.request(url);
+#endif
 
     return a.exec();
 }

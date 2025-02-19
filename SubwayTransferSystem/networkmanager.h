@@ -17,7 +17,6 @@ public slots:
 
 signals:
     void requestFinished(QNetworkReply* reply);
-    void errorOccured(QString error);
 
 private:
     QNetworkAccessManager m_manager;
@@ -32,17 +31,24 @@ public:
 
 public slots:
     void onRequestFinished(QNetworkReply* reply);
+
+signals:
+    void errorOccured(QString error);
 };
 
-class NetworkManager : QObject
+class NetworkManager : public QObject
 {
     Q_OBJECT
 
 public:
+    enum class RequestType {
+        Get,
+        Post
+    };
+
     explicit NetworkManager(QObject* parent = nullptr);
 
-    void request();
-
+    void request(const QUrl& url /*, RequestType type, const QByteArray& data*/);
 
 private:
     HttpRequestManager m_manager;
