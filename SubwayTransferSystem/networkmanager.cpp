@@ -1,6 +1,7 @@
 #include "networkmanager.h"
 #include <QTimer>
 #include <QUrlQuery>
+#include <QGeoCoordinate>
 #include <QDebug>
 
 HttpRequestManager::HttpRequestManager(QObject* parent)
@@ -106,8 +107,32 @@ void HttpResponseHandler::onRequestFinished(QNetworkReply *reply)
 
 void HttpResponseHandler::onParseFinished()
 {
-    qDebug() << m_stationInfos.size();
+    // calculate distances between stations of one line
+    for (auto line = m_subwayLines.begin(); line != m_subwayLines.end(); ++line) {
+        int lineId = line.key();
+        if (m_lineDistances.find(lineId) == m_lineDistances.end()) {
+            m_lineDistances.insert(lineId, QVector<int>());
+        }
+        const QVector<QString>& stations = line.value();
+        for (int i = 0; i < stations.size() - 1; ++i) {
+            const QString& fromStation = stations[i];
+            const QString& toStation = stations[i + 1];
+            if (m_stationInfos.find(fromStation) == m_stationInfos.end()
+                || m_stationInfos.find(toStation) == m_stationInfos.end()) {
+                // log
+                qDebug() << __FUNCTION__ << __LINE__ << "error";
+            }
+            const StationInfo::BasicInfo& fromStationBasicInfo = m_stationInfos[fromStation].basicInfo;
+            const StationInfo::BasicInfo& toStationBasicInfo = m_stationInfos[toStation].basicInfo;
+            QGeoCoordinate from(fromStationBasicInfo.latitude, fromStationBasicInfo.longitude);
+            QGeoCoordinate to(toStationBasicInfo.latitude, toStationBasicInfo.longitude);
+            int distance = from.distanceTo(to);
+            m_lineDistances[lineId].push_back(distance);
+        }
+    }
+
     printStationInfos(*this);
+    printLineDistances(*this);
 }
 
 NetworkManager::NetworkManager(QObject *parent)
@@ -115,8 +140,8 @@ NetworkManager::NetworkManager(QObject *parent)
 {
     (void)connect(&m_manager, &HttpRequestManager::requestFinished, &m_handler, &HttpResponseHandler::onRequestFinished);
     (void)connect(&m_handler, &HttpResponseHandler::errorOccured, this, &NetworkManager::errorOccured);
-    (void)connect(&m_handler, QOverload<const QUrl&>::of(&HttpResponseHandler::httpRequestPending), &m_manager, QOverload<const QUrl&>::of(&HttpRequestManager::sendGetRequest));
-    // (void)connect(&m_handler, QOverload<QSet<QUrl>>::of(&HttpResponseHandler::httpRequestPending), &m_manager, QOverload<QSet<QUrl>>::of(&HttpRequestManager::sendGetRequest));
+    (void)connect(&m_handler, QOverload<const QUrl&>::of(&HttpResponseHandler::httpRequestPending)
+                  , &m_manager, QOverload<const QUrl&>::of(&HttpRequestManager::sendGetRequest));
 }
 
 void NetworkManager::request(const QUrl &url)
@@ -147,6 +172,20 @@ void printStationInfos(const HttpResponseHandler &handler)
                 << QString::number(stationInfo.value().basicInfo.latitude);
         for (auto belongingLine : stationInfo.value().basicInfo.belongingLines) {
             context << QString::number(belongingLine);
+        }
+
+        qDebug() << context.join(" ");
+    }
+}
+
+void printLineDistances(const HttpResponseHandler &handler)
+{
+    const HttpResponseHandler::LineDistances& lineDistances = handler.lineDistances();
+    for (auto line = lineDistances.begin(); line != lineDistances.end(); ++line) {
+        QStringList context;
+        context << QString::number(line.key()) << ":";
+        for (int distance : line.value()) {
+            context << QString::number(distance);
         }
 
         qDebug() << context.join(" ");

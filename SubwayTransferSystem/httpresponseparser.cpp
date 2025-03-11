@@ -119,7 +119,7 @@ bool WhAppHttpResponseParser::parse(const QString& context, QString &err_msg)
                 stationInfo.basicInfo.belongingLines.insert(line.key());
                 stationInfos.insert(station, stationInfo);
 
-                qDebug() << stationInfo.basicInfo.name << stationInfo.basicInfo.belongingLines;
+                // qDebug() << stationInfo.basicInfo.name << stationInfo.basicInfo.belongingLines;
             }
             else {
                 stationInfos[station].basicInfo.belongingLines.insert(line.key());

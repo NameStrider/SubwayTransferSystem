@@ -38,6 +38,8 @@ class HttpResponseHandler : public QObject
 
 public:
     using SubwayLines = QHash<int, QVector<QString>>;
+    // unit: meter
+    using LineDistances = QHash<int, QVector<int>>;
     using StationInfos = QHash<QString, StationInfo>;
 
     explicit HttpResponseHandler(QObject* parent = nullptr);
@@ -49,6 +51,8 @@ public:
     const StationInfos& stationInfos() const { return m_stationInfos; }
 
     StationInfos& stationInfos() { return const_cast<StationInfos&>(m_stationInfos); }
+
+    const LineDistances& lineDistances() const { return m_lineDistances; }
 
     HttpResponseParserFactory& getHttpResponseParserFactory() const {
         return const_cast<HttpResponseParserFactory&>(m_parserFactory);
@@ -72,6 +76,7 @@ signals:
 private:  
     // do not save template data
     SubwayLines m_subwayLines;
+    LineDistances m_lineDistances;
     StationInfos m_stationInfos;
     QSet<QUrl>::const_iterator m_urlIndex;
     QSet<QUrl> m_pendingUrls;
@@ -121,5 +126,6 @@ private:
 
 void printSubwayLines(const HttpResponseHandler& handler);
 void printStationInfos(const HttpResponseHandler& handler);
+void printLineDistances(const HttpResponseHandler& handler);
 
 #endif // NETWORKMANAGER_H
