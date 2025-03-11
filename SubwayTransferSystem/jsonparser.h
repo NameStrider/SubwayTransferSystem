@@ -23,12 +23,11 @@ public slots:
 signals:
     void parseFinished(const SubwayGraph::LineNames& lineNames
                        , const SubwayGraph::LineDistances& lineDistances
-                       , const SubwayGraph::StationNodeParams& nodeParams);
-
-private:
-    JsonParser();   
+                       , const SubwayGraph::StationNodeParams& nodeParams);   
 
 public:
+    JsonParser();
+
     QString m_fileName;
     SubwayGraph* m_subwayGraph;
     SubwayGraph::LineNames m_lineNames;

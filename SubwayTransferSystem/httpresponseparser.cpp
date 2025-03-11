@@ -118,6 +118,11 @@ bool WhAppHttpResponseParser::parse(const QString& context, QString &err_msg)
                 stationInfo.basicInfo.stayTime = DEFAULT_STAY_TIME;
                 stationInfo.basicInfo.belongingLines.insert(line.key());
                 stationInfos.insert(station, stationInfo);
+
+                qDebug() << stationInfo.basicInfo.name << stationInfo.basicInfo.belongingLines;
+            }
+            else {
+                stationInfos[station].basicInfo.belongingLines.insert(line.key());
             }
         }
     }
@@ -222,22 +227,21 @@ bool BDMapHttpResponseParser::parse(const QString &context, QString &err_msg)
     double longitude = location["lng"].toDouble();
     double latitude = location["lat"].toDouble();
 
+    QString stationName = tag.mid(3, tag.length() - 6);
     HttpResponseHandler::StationInfos& stationInfos = m_handler.stationInfos();
-    if (stationInfos.find(tag) != stationInfos.end()) {
-        StationInfo& stationInfo = stationInfos[tag];
+    if (stationInfos.find(stationName) != stationInfos.end()) {
+        StationInfo& stationInfo = stationInfos[stationName];
         stationInfo.basicInfo.longitude = longitude;
         stationInfo.basicInfo.latitude = latitude;
     }  
 
-    if (m_count > 0) {
-        m_count--;
+    if (m_count < 0) {
+        qDebug() << "m_count error";
     }
-    else if (m_count == 0) {
+    m_count--;
+    if (m_count == 0) {
         // not reasonable, to be improved
         emit m_handler.getHttpResponseParserFactory().parseFinished();
-    }
-    else {
-        qDebug() << "m_count error";
     }
 
     qDebug() << tag << longitude << latitude << m_count;

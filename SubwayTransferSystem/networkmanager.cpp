@@ -67,7 +67,6 @@ void HttpResponseHandler::onRequestFinished(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError) {
         // to be improved
-        clear();
         QByteArray buffer = reply->readAll();
         QString context(buffer);
         // qDebug() << context;
@@ -107,7 +106,7 @@ void HttpResponseHandler::onRequestFinished(QNetworkReply *reply)
 
 void HttpResponseHandler::onParseFinished()
 {
-    qDebug() << __FUNCTION__ << __LINE__;
+    qDebug() << m_stationInfos.size();
     printStationInfos(*this);
 }
 

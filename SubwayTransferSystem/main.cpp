@@ -115,7 +115,6 @@ int main(int argc, char *argv[])
 #ifdef NETWORK_TEST
     NetworkManager networkManager;
     QUrl url(DEFAULT_WUHAN_METRO_REQUEST_URL);
-//    QUrl url("http://restapi.amap.com/v3/place/text?key=c079b555e5bce39d8b5192fdc3ec5ec3&keywords=循礼门&types=&city=武汉&children=1&offset=1&page=1&extensions=all");
     networkManager.request(url);
 
 #endif

@@ -26,6 +26,6 @@ constexpr char DEFAULT_WUHAN_METRO_REQUEST_URL[] = "http://wh.bendibao.com/ditie
 constexpr char BDMAP_REQUEST_URL_TEMPLATE[] = "https://api.map.baidu.com/geocoding/v3/?address=%1&city=武汉市&output=json&ak=%2";
 
 // timer
-const int BDMAP_REQUEST_INTERVAL = 1000 / 24;
+const int BDMAP_REQUEST_INTERVAL = 1000 / 3;
 
 #endif // CONST_H
