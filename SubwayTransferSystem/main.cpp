@@ -1,8 +1,10 @@
 #include "mainwindow.h"
 #include "subwaygraph.h"
 #include "jsonparser.h"
+#include "jsongenerator.h"
 #include "networkmanager.h"
 #include <QApplication>
+#include <QObject>
 
 #define NETWORK_TEST
 
@@ -116,6 +118,8 @@ int main(int argc, char *argv[])
     NetworkManager networkManager;
     QUrl url(DEFAULT_WUHAN_METRO_REQUEST_URL);
     networkManager.request(url);
+    JsonGenerator& jsonGenerator = JsonGenerator::getJsonGenerator();
+    QObject::connect(&networkManager, &NetworkManager::requestFinished, &jsonGenerator, &JsonGenerator::generate);
 
 #endif
 

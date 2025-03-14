@@ -13,14 +13,12 @@ public:
     QString getFileName() const { return m_fileName; }
     void setFileName(const QString& fileName) { m_fileName = fileName; }
 
-    SubwayGraph* getSubwayGraph() const { return m_subwayGraph; }
-    void setSubwayGraph(SubwayGraph* subwayGraph) { m_subwayGraph = subwayGraph; }
-
 public slots:
     bool parse(QString& err_msg);
     void clear();
 
 signals:
+    void errorOccured(QString err_msg);
     void parseFinished(const SubwayGraph::LineNames& lineNames
                        , const SubwayGraph::LineDistances& lineDistances
                        , const SubwayGraph::StationNodeParams& nodeParams);   
@@ -29,7 +27,6 @@ public:
     JsonParser();
 
     QString m_fileName;
-    SubwayGraph* m_subwayGraph;
     SubwayGraph::LineNames m_lineNames;
     SubwayGraph::LineDistances m_lineDistances;
     SubwayGraph::StationNodeParams m_stationNodeParams;

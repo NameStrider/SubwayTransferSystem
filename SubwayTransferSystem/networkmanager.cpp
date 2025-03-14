@@ -76,7 +76,7 @@ void HttpResponseHandler::onRequestFinished(QNetworkReply *reply)
         if (reply->request().url().toString() == DEFAULT_WUHAN_METRO_REQUEST_URL) {         
             HttpResponseParserBase& parser = m_parserFactory.getHttpResponseParser(HttpResponseParserType::WhApp);
             parser.parse(context, err_msg);
-            printSubwayLines(*this);
+            printSubwayLines(m_subwayLines);
         }
         else if (reply->request().url().toString().contains(BDMAP_DOMAIN_NAME)) {
             // need specially process as response content of BaiDu map does not include address
@@ -131,8 +131,10 @@ void HttpResponseHandler::onParseFinished()
         }
     }
 
-    printStationInfos(*this);
-    printLineDistances(*this);
+    printStationInfos(m_stationInfos);
+    printLineDistances(m_lineDistances);
+
+    emit handleFinished(m_subwayLines, m_lineDistances, m_stationInfos);
 }
 
 NetworkManager::NetworkManager(QObject *parent)
@@ -140,6 +142,7 @@ NetworkManager::NetworkManager(QObject *parent)
 {
     (void)connect(&m_manager, &HttpRequestManager::requestFinished, &m_handler, &HttpResponseHandler::onRequestFinished);
     (void)connect(&m_handler, &HttpResponseHandler::errorOccured, this, &NetworkManager::errorOccured);
+    (void)connect(&m_handler, &HttpResponseHandler::handleFinished, this, &NetworkManager::requestFinished);
     (void)connect(&m_handler, QOverload<const QUrl&>::of(&HttpResponseHandler::httpRequestPending)
                   , &m_manager, QOverload<const QUrl&>::of(&HttpRequestManager::sendGetRequest));
 }
@@ -149,9 +152,9 @@ void NetworkManager::request(const QUrl &url)
     m_manager.sendGetRequest(url);
 }
 
-void printSubwayLines(const HttpResponseHandler& handler)
+void printSubwayLines(const HttpResponseHandler::SubwayLines& subwayLines)
 {
-    for (auto line = handler.subwayLines().begin(); line != handler.subwayLines().end(); ++line) {
+    for (auto line = subwayLines.begin(); line != subwayLines.end(); ++line) {
         QStringList context;
         context << QString::number(line.key()) << ":";
         for (const auto& name : line.value()) {
@@ -161,9 +164,8 @@ void printSubwayLines(const HttpResponseHandler& handler)
     }
 }
 
-void printStationInfos(const HttpResponseHandler &handler)
+void printStationInfos(const HttpResponseHandler::StationInfos& stationInfos)
 {
-    const HttpResponseHandler::StationInfos& stationInfos = handler.stationInfos();
     for (auto stationInfo = stationInfos.begin(); stationInfo != stationInfos.end(); ++stationInfo) {
         QStringList context;
         context << stationInfo.value().basicInfo.name
@@ -178,9 +180,8 @@ void printStationInfos(const HttpResponseHandler &handler)
     }
 }
 
-void printLineDistances(const HttpResponseHandler &handler)
+void printLineDistances(const HttpResponseHandler::LineDistances& lineDistances)
 {
-    const HttpResponseHandler::LineDistances& lineDistances = handler.lineDistances();
     for (auto line = lineDistances.begin(); line != lineDistances.end(); ++line) {
         QStringList context;
         context << QString::number(line.key()) << ":";

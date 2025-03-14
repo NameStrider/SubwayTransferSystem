@@ -13,8 +13,15 @@ public:
     QString getFileName() const { return m_fileName; }
     void setFileName(const QString& fileName) { m_fileName = fileName; }
 
+signals:
+    void errorOccured(QString err_msg);
+    void generateFinished(QString fileName);
+
 public slots:
-    bool generate(const HttpResponseHandler::SubwayLines& subwayLines, const HttpResponseHandler::StationInfos& stationInfos);
+    // if cross-thread case?
+    bool generate(const HttpResponseHandler::SubwayLines& subwayLines
+                  , const HttpResponseHandler::LineDistances& lineDistances
+                  , const HttpResponseHandler::StationInfos& stationInfos);
 
 private:
     JsonGenerator();

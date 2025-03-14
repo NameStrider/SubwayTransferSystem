@@ -6,7 +6,6 @@
 
 JsonParser::JsonParser()
     : m_fileName(":/resource/data/wuhanmetro.json")
-    , m_subwayGraph(nullptr)
 {}
 
 JsonParser &JsonParser::getJsonParserInstance()
@@ -17,11 +16,6 @@ JsonParser &JsonParser::getJsonParserInstance()
 
 bool JsonParser::parse(QString &err_msg)
 {
-    if (m_subwayGraph == nullptr) {
-        err_msg = QString("parse failed as SubwayGraph object can not be null");
-        return false;
-    }
-
     QFile file(m_fileName);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text) != true) {
         err_msg = QString("parse failed as JsonParser can not open file %s").arg(m_fileName);

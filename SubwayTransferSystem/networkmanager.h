@@ -37,9 +37,8 @@ class HttpResponseHandler : public QObject
     Q_OBJECT
 
 public:
-    using SubwayLines = QHash<int, QVector<QString>>;
-    // unit: meter
-    using LineDistances = QHash<int, QVector<int>>;
+    using SubwayLines = QHash<int, QVector<QString>>;  
+    using LineDistances = QHash<int, QVector<int>>; // unit: meter
     using StationInfos = QHash<QString, StationInfo>;
 
     explicit HttpResponseHandler(QObject* parent = nullptr);
@@ -69,9 +68,10 @@ public slots:
     void onParseFinished();
 
 signals:
-    void errorOccured(QString error);
+    void errorOccured(QString error);   
     void httpRequestPending(const QUrl& url);
     void httpRequestPending(QSet<QUrl> urls);
+    void handleFinished(const SubwayLines& subwayLines, const LineDistances& lineDistances, const StationInfos& staionInfos);
 
 private:  
     // do not save template data
@@ -118,14 +118,17 @@ public slots:
 
 signals:
     void errorOccured(QString error);
+    void requestFinished(const HttpResponseHandler::SubwayLines& subwayLines
+                         , const HttpResponseHandler::LineDistances& lineDistances
+                         , const HttpResponseHandler::StationInfos& stationInfos);
 
 private:
     HttpRequestManager m_manager;
     HttpResponseHandler m_handler;
 };
 
-void printSubwayLines(const HttpResponseHandler& handler);
-void printStationInfos(const HttpResponseHandler& handler);
-void printLineDistances(const HttpResponseHandler& handler);
+void printSubwayLines(const HttpResponseHandler::SubwayLines& subwayLines);
+void printStationInfos(const HttpResponseHandler::StationInfos& stationInfos);
+void printLineDistances(const HttpResponseHandler::LineDistances& lineDistances);
 
 #endif // NETWORKMANAGER_H
