@@ -77,7 +77,7 @@ public:
     virtual bool parse(const QString &context, QString &err_msg) override;
 
     // enable other class to call these static function
-    static QUrl generateBDMapRequestUrl(const QString& address, const QString& key = BDMAP_KEY);
+    static QUrl generateBDMapRequestUrl(const QString& address, const QString& city, const QString& key = BDMAP_KEY);
 
     void setCount(int count) { m_count = count; }
     int count() const { return m_count; }

@@ -118,8 +118,6 @@ bool WhAppHttpResponseParser::parse(const QString& context, QString &err_msg)
                 stationInfo.basicInfo.stayTime = DEFAULT_STAY_TIME;
                 stationInfo.basicInfo.belongingLines.insert(line.key());
                 stationInfos.insert(station, stationInfo);
-
-                // qDebug() << stationInfo.basicInfo.name << stationInfo.basicInfo.belongingLines;
             }
             else {
                 stationInfos[station].basicInfo.belongingLines.insert(line.key());
@@ -139,7 +137,7 @@ bool WhAppHttpResponseParser::parse(const QString& context, QString &err_msg)
             // use complete address to precisely request
             // should decouple
             QString completeAddress = QString("武汉市") + station + "地铁站";
-            const QUrl& url = BDMapHttpResponseParser::generateBDMapRequestUrl(completeAddress);
+            const QUrl& url = BDMapHttpResponseParser::generateBDMapRequestUrl(completeAddress, "武汉市");
             pendingUrls.insert(url);
         }
     }
@@ -249,10 +247,10 @@ bool BDMapHttpResponseParser::parse(const QString &context, QString &err_msg)
     return true;
 }
 
-QUrl BDMapHttpResponseParser::generateBDMapRequestUrl(const QString &address, const QString &key)
+QUrl BDMapHttpResponseParser::generateBDMapRequestUrl(const QString &address, const QString& city, const QString &key)
 {
     QString urlTemplateStr = BDMAP_REQUEST_URL_TEMPLATE;
-    return QUrl(urlTemplateStr.arg(address).arg(key));
+    return QUrl(urlTemplateStr.arg(address).arg(city).arg(key));
 }
 
 AmapHttpResponseParser::AmapHttpResponseParser(QObject* parent, HttpResponseHandler &handler)
