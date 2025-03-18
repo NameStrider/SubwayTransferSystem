@@ -3,6 +3,7 @@
 #include "jsonparser.h"
 #include "jsongenerator.h"
 #include "networkmanager.h"
+#include "loguru.hpp"
 #include <QApplication>
 #include <QObject>
 
@@ -13,6 +14,11 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
+
+    loguru::init(argc, argv);
+    loguru::add_file("D:\\Qt_Projects\\subway_transfer_system.log", loguru::Append, loguru::Verbosity_MAX);
+    QString err_msg("err_msg");
+    LOG_F(ERROR, err_msg.toStdString().c_str());
 
 #ifdef SUBWAY_GRAPH_TEST
     SubwayGraph::StationNodeParams params;
@@ -114,13 +120,25 @@ int main(int argc, char *argv[])
     }
 #endif
 
+#ifdef JSON_TEST
+    JsonParser& parser = JsonParser::getJsonParserInstance();
+    SubwayGraph graph;
+    QObject::connect(&parser, &JsonParser::parseFinished, &graph, &SubwayGraph::startBuild);
+    parser.parse();
+    printSubwayGraph(graph);
+
+#endif
+
 #ifdef NETWORK_TEST
     NetworkManager networkManager;
     QUrl url(DEFAULT_WUHAN_METRO_REQUEST_URL);
     networkManager.request(url);
     JsonGenerator& jsonGenerator = JsonGenerator::getJsonGenerator();
+    JsonParser& jsonParser = JsonParser::getJsonParserInstance();
+    SubwayGraph subwayGraph;
     QObject::connect(&networkManager, &NetworkManager::requestFinished, &jsonGenerator, &JsonGenerator::generate);
-
+    QObject::connect(&jsonGenerator, &JsonGenerator::generateFinished, &jsonParser, &JsonParser::parse);
+    QObject::connect(&jsonParser, &JsonParser::parseFinished, &subwayGraph, &SubwayGraph::startBuild);
 #endif
 
     return a.exec();

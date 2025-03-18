@@ -3,7 +3,7 @@
 
 #include "subwaygraph.h"
 
-class JsonParser : QObject
+class JsonParser : public QObject
 {
     Q_OBJECT
 
@@ -14,7 +14,7 @@ public:
     void setFileName(const QString& fileName) { m_fileName = fileName; }
 
 public slots:
-    bool parse(QString& err_msg);
+    bool parse(QString fileName = ":/resource/data/wuhanmetro.json");
     void clear();
 
 signals:

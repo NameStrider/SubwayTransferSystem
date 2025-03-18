@@ -103,7 +103,9 @@ bool JsonGenerator::generate(const HttpResponseHandler::SubwayLines &subwayLines
 
     QJsonDocument jsonDocument(root);
     file.write(jsonDocument.toJson());
+    file.close();
 
+    emit generateFinished(m_fileName);
     return true;
 }
 

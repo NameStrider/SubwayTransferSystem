@@ -96,14 +96,17 @@ public:
     bool removeNode(const QString& name, const MultiBiDirectionStations& biStations, QString& err_msg);
 
     // 先 buildStations 然后 buildLines 最后 buildGraph
-    bool build(const StationNodeParams& stationParams, const LineNames& lines
-               , const LineDistances& distances, QString& err_msg);
+    bool build(const StationNodeParams& stationParams, const LineNames& lineNames
+               , const LineDistances& lineDistances, QString& err_msg);
 
     void clear();
 
     Path dfs() const;
 
-    Path bfs() const;   
+    Path bfs() const;
+
+public slots:
+    void startBuild(const LineNames& lineNames, const LineDistances& lineDistances, const StationNodeParams& nodeParams);
 
 private:
     bool buildStations(const StationNodeParams& stationParams,QString& err_msg);

@@ -1,4 +1,5 @@
 #include "jsonparser.h"
+#include "loguru.hpp"
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -14,11 +15,15 @@ JsonParser &JsonParser::getJsonParserInstance()
     return parser;
 }
 
-bool JsonParser::parse(QString &err_msg)
+bool JsonParser::parse(QString fileName)
 {
+    m_fileName = fileName;
+
     QFile file(m_fileName);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text) != true) {
-        err_msg = QString("parse failed as JsonParser can not open file %s").arg(m_fileName);
+        QString err_msg = QString("parse failed as JsonParser can not open file %s").arg(m_fileName);
+        emit errorOccured(err_msg);
+        LOG_F(ERROR, err_msg.toStdString().c_str());
         return false;
     }
 
@@ -28,7 +33,9 @@ bool JsonParser::parse(QString &err_msg)
     QJsonParseError parseError;
     QJsonDocument jsonDocument = QJsonDocument::fromJson(fileData, &parseError);
     if (parseError.error != QJsonParseError::NoError) {
-        err_msg = parseError.errorString();
+        QString err_msg = parseError.errorString();
+        emit errorOccured(err_msg);
+        LOG_F(ERROR, err_msg.toStdString().c_str());
         return false;
     }
 
@@ -69,6 +76,7 @@ bool JsonParser::parse(QString &err_msg)
         m_lineDistances[id] = distances;
     }
 
+    LOG_SCOPE_F(INFO, __FUNCTION__);
     emit parseFinished(m_lineNames, m_lineDistances, m_stationNodeParams);
     return true;
 }

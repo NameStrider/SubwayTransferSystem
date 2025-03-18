@@ -99,12 +99,12 @@ bool SubwayGraph::removeNode(const QString &name, const MultiBiDirectionStations
     return true;
 }
 
-bool SubwayGraph::build(const SubwayGraph::StationNodeParams &stationParams, const SubwayGraph::LineNames &lines
-                        , const SubwayGraph::LineDistances &distances, QString &err_msg)
+bool SubwayGraph::build(const SubwayGraph::StationNodeParams &stationParams, const SubwayGraph::LineNames &lineNames
+                        , const SubwayGraph::LineDistances &lineDistances, QString &err_msg)
 {
     if (buildStations(stationParams, err_msg) != true
-        || buildLines(lines, err_msg) != true
-        || buildGraph(distances, err_msg) != true)
+        || buildLines(lineNames, err_msg) != true
+        || buildGraph(lineDistances, err_msg) != true)
         return false;
     return true;
 }
@@ -124,6 +124,18 @@ SubwayGraph::Path SubwayGraph::dfs() const
 SubwayGraph::Path SubwayGraph::bfs() const
 {
     return Path();
+}
+
+void SubwayGraph::startBuild(const SubwayGraph::LineNames &lineNames, const SubwayGraph::LineDistances &lineDistances, const SubwayGraph::StationNodeParams &nodeParams)
+{
+    QString err_msg;
+    if (build(nodeParams, lineNames, lineDistances, err_msg) != false) {
+        qDebug() << __FILE__ << __FUNCTION__ << __LINE__;
+        printSubwayGraph(*this);
+    }
+    else {
+        qDebug() << err_msg;
+    }
 }
 
 bool SubwayGraph::buildStations(const StationNodeParams& stationParams, QString& err_msg)

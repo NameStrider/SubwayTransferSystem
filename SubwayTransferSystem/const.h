@@ -12,7 +12,7 @@ constexpr int    DEFAULT_STAY_TIME = 2;
 constexpr int    MAX_STATION_NODE = 500;
 constexpr int    MIN_LINE_ID = 1;
 constexpr int    MAX_LINE_ID = 30;
-constexpr int    MIN_DISTANCE = 1;
+constexpr int    MIN_DISTANCE = 0;
 constexpr int    MAX_DISTANCE = __INT_MAX__;
 constexpr int    MIN_STATION_IN_LINE = 2;
 
