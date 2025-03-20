@@ -103,6 +103,10 @@ bool JsonGenerator::generate(const HttpResponseHandler::SubwayLines &subwayLines
 
     QJsonDocument jsonDocument(root);
     file.write(jsonDocument.toJson());
+    // must call QFile::close immediately, or it will cause data reading incomplete. because JsonGenerator
+    // and JsonParser are in same thread, so once emitting signal, slot will be called immediately, but
+    // QFile:write just write data to the memory buffer rather than disk. QFile::close will guarantee that
+    // whole data to be written to the disk
     file.close();
 
     emit generateFinished(m_fileName);
