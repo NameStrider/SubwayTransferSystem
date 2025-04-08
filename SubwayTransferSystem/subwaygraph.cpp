@@ -1,4 +1,7 @@
 #include "subwaygraph.h"
+#include <queue>
+#include <QQueue>
+#include <QStack>
 #include <QDebug>
 
 SubwayGraph::SubwayGraph(QObject* parent)
@@ -116,22 +119,134 @@ void SubwayGraph::clear()
     m_lines.clear();
 }
 
-SubwayGraph::Path SubwayGraph::dfs() const
+SubwayGraph::PathInfo SubwayGraph::dijkstra(const QString& start, const QString& end) const
 {
-    return Path();
+    // validate start and end are in graph
+    // to do
+    if (start == end) {
+        PathInfo::Path path;
+        path.push_back(start);
+        return PathInfo(0, path);
+    }
+
+    // init
+    QHash<QString, int> minDistance;
+    QHash<QString, bool> visited;
+    // QPair<QString, QString>::second -> QPair<QString, QString>::first
+    QHash<QString, QString> parent;
+    std::priority_queue<QPair<QString, int>, QVector<QPair<QString, int>>, Comparator> closestNodes;
+    for (auto station = m_stations.begin(); station != m_stations.end(); ++station) {
+        minDistance[station.key()] = MAX_DISTANCE;
+        visited[station.key()] = false;
+    }
+    minDistance[start] = 0;
+    visited[start] = true;
+    for (auto edge = m_graph[start].begin(); edge != m_graph[start].end(); ++edge) {
+        const QString& toNodeName = edge->toNode->param.name;
+        int distance = edge->distance;
+        minDistance[toNodeName] = distance;
+        closestNodes.push(qMakePair(toNodeName, distance));
+        parent[toNodeName] = start;
+    }
+
+    while (closestNodes.empty() != true) {
+        QPair<QString, int> closestNode = closestNodes.top();
+        closestNodes.pop();
+        if (visited[closestNode.first])
+            continue;
+
+        visited[closestNode.first] = true;
+
+        const QList<Edge>& edges = m_graph[closestNode.first];
+        for (auto edge = edges.begin(); edge != edges.end(); ++edge) {
+            if (closestNode.second + edge->distance < minDistance[edge->toNode->param.name]) {
+                parent[edge->toNode->param.name] = closestNode.first;
+                minDistance[edge->toNode->param.name] = closestNode.second + edge->distance;
+                closestNodes.push(qMakePair(edge->toNode->param.name, closestNode.second + edge->distance));
+            }
+        }
+    }
+
+    if (minDistance[end] == MAX_DISTANCE) {
+        return PathInfo();
+    }
+    const PathInfo::Path& path = generatePath(start, end, parent);
+    return PathInfo(minDistance[end], path);
 }
 
-SubwayGraph::Path SubwayGraph::bfs() const
+SubwayGraph::PathInfo SubwayGraph::bfs(const QString& start, const QString& end) const
 {
-    return Path();
+    // validate start and end are in graph
+    // to do
+    if (start == end) {
+        PathInfo::Path path;
+        path.push_back(start);
+        return PathInfo(0, path);
+    }
+
+    // init
+    QHash<QString, bool> visited;
+    // QPair<QString, QString>::second -> QPair<QString, QString>::first
+    QHash<QString, QString> parent;
+    // {parent::item} -> distance
+    QHash<QPair<QString, QString>, int> distances;
+    QQueue<QString> nodeQueue;
+    for (auto station = m_stations.begin(); station != m_stations.end(); ++station) {
+        visited[station.key()] = false;
+    }
+    nodeQueue.push_back(start);
+
+    while (nodeQueue.isEmpty() != true) {
+        QString node = nodeQueue.front();
+        nodeQueue.pop_front();
+        if (node == end) {
+            const PathInfo& pathInfo = generatePathInfo(start, end, parent, distances);
+            return pathInfo;
+        }
+        // neccesary
+        if (visited[node])
+            continue;
+
+        visited[node] = true;
+
+        for (auto edge = m_graph[node].begin(); edge != m_graph[node].end(); ++edge) {
+            if (visited[edge->toNode->param.name]) {
+                continue;
+            }
+            if (parent.find(edge->toNode->param.name) == parent.end()) {
+                parent[edge->toNode->param.name] = node;
+            }
+            nodeQueue.push_back(edge->toNode->param.name);          
+            auto nodePair = qMakePair<QString, QString>(node, edge->toNode->param.name);
+            QHash<QPair<QString, QString>, int>::iterator distanceIterator = distances.find(nodePair);
+            if (distanceIterator != distances.end()) {
+                distanceIterator.value() = edge->distance;
+            }
+            else {
+                distances[nodePair] = edge->distance;
+            }
+        }
+    }
+
+    return PathInfo();
 }
 
-void SubwayGraph::startBuild(const SubwayGraph::LineNames &lineNames, const SubwayGraph::LineDistances &lineDistances, const SubwayGraph::StationNodeParams &nodeParams)
+void SubwayGraph::startBuild(const SubwayGraph::LineNames &lineNames
+                             , const SubwayGraph::LineDistances &lineDistances
+                             , const SubwayGraph::StationNodeParams &nodeParams)
 {
     QString err_msg;
     if (build(nodeParams, lineNames, lineDistances, err_msg) != false) {
         qDebug() << __FILE__ << __FUNCTION__ << __LINE__;
         printSubwayGraph(*this);
+        const PathInfo& pathInfo = dijkstra("积玉桥", "循礼门");
+        const SubwayGraph::PathInfo::Path& path = pathInfo.path;
+        qDebug() << pathInfo.totalDistance;
+        QStringList stationList;
+        for (const QString& station : path) {
+            stationList << station;
+        }
+        qDebug() << stationList.join(" ");
     }
     else {
         qDebug() << err_msg;
@@ -431,6 +546,71 @@ bool SubwayGraph::removeEdgesFromGraph(const QString &name)
     return true;
 }
 
+SubwayGraph::PathInfo::Path SubwayGraph::generatePath(const QString &start
+                                                      , const QString &end
+                                                      , const QHash<QString, QString> &parent) const
+{
+    PathInfo::Path path;
+    if (start == end) {
+        path.push_back(start);
+        return path;
+    }
+
+    // print
+    for (auto it = parent.begin(); it != parent.end(); ++it) {
+        qDebug() << it.value() << " -> " << it.key();
+    }
+
+    // generate
+    QStack<QString> nodeStack;
+    nodeStack.push(end);
+    QString cur = end;
+    while (true) {
+        if (cur == start) {
+            break;
+        }
+        if (parent.find(cur) != parent.end()) {
+            nodeStack.push(parent[cur]);
+            cur = parent[cur];
+        }
+        else {
+            qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << " can not find " << cur;
+            break;
+        }
+    }
+
+    while (nodeStack.empty() != true) {
+        const QString& node = nodeStack.top();
+        nodeStack.pop();
+        path.push_back(node);
+    }
+
+    return path;
+}
+
+SubwayGraph::PathInfo SubwayGraph::generatePathInfo(const QString &start
+                                                    , const QString &end
+                                                    , const QHash<QString, QString> &parent
+                                                    , const QHash<QPair<QString, QString>, int> &distances) const
+{    
+    PathInfo pathInfo;
+    pathInfo.totalDistance = 0;
+    if (start == end) {
+        return pathInfo;
+    }
+    pathInfo.path = generatePath(start, end, parent);
+    for (auto pathIterator = pathInfo.path.begin(); pathIterator != pathInfo.path.end() - 1; ++pathIterator) {
+        auto nodePair = qMakePair<QString, QString>(*pathIterator, *(pathIterator + 1));
+        if (distances.find(nodePair) != distances.end()) {
+            pathInfo.totalDistance += distances[nodePair];
+        }
+        else {
+            qDebug() << __FILE__ << __FUNCTION__ << __LINE__ << "can not find node pair " << nodePair;
+        }
+    }
+    return pathInfo;
+}
+
 bool StationDistance::isValid() const
 {
     if (name.isEmpty()) {
@@ -463,10 +643,12 @@ bool BiDirectionStations::isValid(const SubwayGraph &graph) const
 void printSubwayGraph(const SubwayGraph& subwayGraph)
 {
     // print m_stations
+#ifdef PRINT_STATIONS
     const SubwayGraph::Stations& stations = subwayGraph.getStations();
     for (auto it_stations = stations.begin(); it_stations != stations.end(); ++it_stations) {
         qDebug() << it_stations.key() << it_stations.value();
     }
+#endif
 
     // print m_lines
     const SubwayGraph::Lines& lines = subwayGraph.getLines();

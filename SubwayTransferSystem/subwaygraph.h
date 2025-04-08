@@ -56,18 +56,37 @@ struct BiDirectionStations {
     bool isValid(const SubwayGraph& graph) const;
 };
 
+struct Comparator {
+    bool operator()(const QPair<QString, int>& left, const QPair<QString, int>& right) {
+        return left.second > right.second;
+    }
+};
 
 class SubwayGraph : public QObject
 {
     Q_OBJECT
 
 public:
-    // 邻接表
-    using Graph = QHash<QString, QList<Edge>>;
-
     // 换乘路径，(int: total distance, QString: station name)
     // 不能是 QPair<int, QSharedPointer<StationNode>> 因为 StationNode 需要被析构
-    using Path = QPair<int, QList<QString>>;
+    struct PathInfo {
+        using Path = QList<QString>;
+        int totalDistance;
+        Path path;
+
+        PathInfo(int _totalDistance, const Path& _path)
+            : totalDistance(_totalDistance)
+            , path(_path)
+        {}
+
+        PathInfo()
+            : totalDistance(-1)
+            , path()
+        {}
+    };
+
+    // 邻接表
+    using Graph = QHash<QString, QList<Edge>>;
 
     // 站点集合
     using Stations = QHash<QString, QSharedPointer<StationNode>>;
@@ -101,9 +120,9 @@ public:
 
     void clear();
 
-    Path dfs() const;
+    PathInfo dijkstra(const QString& start, const QString& end) const;
 
-    Path bfs() const;
+    PathInfo bfs(const QString& start, const QString& end) const;
 
 public slots:
     void startBuild(const LineNames& lineNames, const LineDistances& lineDistances, const StationNodeParams& nodeParams);
@@ -132,6 +151,13 @@ private:
     bool removeEdgeFromGraph(const QString& name, const QSharedPointer<StationNode>& toNode);
 
     bool removeEdgesFromGraph(const QString& name);
+
+    PathInfo::Path generatePath(const QString& start, const QString& end, const QHash<QString, QString>& parent) const;
+
+    PathInfo generatePathInfo(const QString& start
+                              , const QString& end
+                              , const QHash<QString, QString>& parent
+                              , const QHash<QPair<QString, QString>, int>& distances) const;
 
     bool m_isBuildLineSucess;
     bool m_isBuildGraphSucess;
