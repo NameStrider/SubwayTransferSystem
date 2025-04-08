@@ -26,19 +26,38 @@
       "latitude": 33.0000,
       "longitude": 117.0000,
       "stayTime": 2,
-      "belongingLines": [2]
+      "belongingLines": [2, 3]
+    },
+    {
+      "name": "E",
+      "latitude": 34.0000,
+      "longitude": 118.0000,
+      "stayTime": 2,
+      "belongingLines": [1, 3]
+    },
+    {
+      "name": "F",
+      "latitude": 35.0000,
+      "longitude": 119.0000,
+      "stayTime": 2,
+      "belongingLines": [3]
     }
   ],
   "lines": [
     {
       "id": 1,
-      "stations": ["A", "B"],
-      "distances": [3]
+      "stations": ["A", "B", "E"],
+      "distances": [3, 4]
     },
     {
       "id": 2,
       "stations": ["C", "B", "D"],
       "distances": [2, 3]
+    },
+    {
+      "id": 3,
+      "stations": ["E", "D", "F"],
+      "distances": [4, 4]
     }
   ]
 }

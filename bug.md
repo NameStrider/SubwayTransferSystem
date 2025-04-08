@@ -2865,4 +2865,217 @@ bool JsonGenerator::generate(const HttpResponseHandler::SubwayLines &subwayLines
   必须在文件完全写入并释放后，再通知外部程序进行解析，避免读写冲突。
   ```
 
+
+
+
+# BFS搜索的路径不对
+
+## 问题表现
+
+- BFS搜索的路径不是最少边路径
+
+- Graph
+
+- ```
+  "F" QSharedPointer(0x3430d00)
+  "B" QSharedPointer(0x3431b40)
+  "C" QSharedPointer(0x3431080)
+  "E" QSharedPointer(0x3431a80)
+  "A" QSharedPointer(0x3431440)
+  "D" QSharedPointer(0x3431000)
+  "1 A B E"
+  "2 C B D"
+  "3 E D F"
+  "F -> (D, 4)"
+  "B -> (A, 3) -> (E, 4) -> (C, 2) -> (D, 3)"
+  "C -> (B, 2)"
+  "E -> (B, 4) -> (D, 4)"
+  "A -> (B, 3)"
+  "D -> (B, 3) -> (E, 4) -> (F, 4)"
+  "F" QSharedPointer(0x3430d00)
+  "B" QSharedPointer(0x3431b40)
+  "C" QSharedPointer(0x3431080)
+  "E" QSharedPointer(0x3431a80)
+  "A" QSharedPointer(0x3431440)
+  "D" QSharedPointer(0x3431000)
+  "1 A B E"
+  "2 C B D"
+  "3 E D F"
+  "F -> (D, 4)"
+  "B -> (A, 3) -> (E, 4) -> (C, 2) -> (D, 3)"
+  "C -> (B, 2)"
+  "E -> (B, 4) -> (D, 4)"
+  "A -> (B, 3)"
+  "D -> (B, 3) -> (E, 4) -> (F, 4)"
+  "D"  ->  "F"
+  "A"  ->  "B"
+  "B"  ->  "C"
+  "B"  ->  "E"
+  "E"  ->  "D"
+  15
+  "A B E D F"
+  ```
+
+- BFS算法
+
+- ```C++
+  SubwayGraph::PathInfo SubwayGraph::bfs(const QString& start, const QString& end) const
+  {
+      // validate start and end are in graph
+      // to do
+      if (start == end) {
+          PathInfo::Path path;
+          path.push_back(start);
+          return PathInfo(0, path);
+      }
+  
+      // init
+      QHash<QString, bool> visited;
+      // QPair<QString, QString>::second -> QPair<QString, QString>::first
+      QHash<QString, QString> parent;
+      // {parent::item} -> distance
+      QHash<QPair<QString, QString>, int> distances;
+      QQueue<QString> nodeQueue;
+      for (auto station = m_stations.begin(); station != m_stations.end(); ++station) {
+          visited[station.key()] = false;
+      }
+      nodeQueue.push_back(start);
+  
+      while (nodeQueue.isEmpty() != true) {
+          QString node = nodeQueue.front();
+          nodeQueue.pop_front();
+          if (node == end) {
+              const PathInfo& pathInfo = generatePathInfo(start, end, parent, distances);
+              return pathInfo;
+          }
+          if (visited[node])
+              continue;
+  
+          visited[node] = true;
+  
+          for (auto edge = m_graph[node].begin(); edge != m_graph[node].end(); ++edge) {
+              if (visited[edge->toNode->param.name]) {
+                  continue;
+              }
+              nodeQueue.push_back(edge->toNode->param.name);
+              parent[edge->toNode->param.name] = node;
+              auto nodePair = qMakePair<QString, QString>(node, edge->toNode->param.name);
+              QHash<QPair<QString, QString>, int>::iterator distanceIterator = distances.find(nodePair);
+              if (distanceIterator != distances.end()) {
+                  distanceIterator.value() = edge->distance;
+              }
+              else {
+                  distances[nodePair] = edge->distance;
+              }
+          }
+      }
+  
+      return PathInfo(-1, PathInfo::Path());
+  }
+  ```
+
+
+## 问题表现
+
+- 1
+
+- ```
+  "A" QSharedPointer(0x3561900)
+  "F" QSharedPointer(0x3560d40)
+  "B" QSharedPointer(0x3561080)
+  "E" QSharedPointer(0x3561440)
+  "C" QSharedPointer(0x3561940)
+  "D" QSharedPointer(0x3561600)
+  "1 A B E"
+  "2 C B D"
+  "3 E D F"
+  "A -> (B, 3)"
+  "F -> (D, 4)"
+  "B -> (A, 3) -> (E, 4) -> (C, 2) -> (D, 3)"
+  "E -> (B, 4) -> (D, 4)"
+  "C -> (B, 2)"
+  "D -> (B, 3) -> (E, 4) -> (F, 4)"
+  "A" QSharedPointer(0x3561900)
+  "F" QSharedPointer(0x3560d40)
+  "B" QSharedPointer(0x3561080)
+  "E" QSharedPointer(0x3561440)
+  "C" QSharedPointer(0x3561940)
+  "D" QSharedPointer(0x3561600)
+  "1 A B E"
+  "2 C B D"
+  "3 E D F"
+  "A -> (B, 3)"
+  "F -> (D, 4)"
+  "B -> (A, 3) -> (E, 4) -> (C, 2) -> (D, 3)"
+  "E -> (B, 4) -> (D, 4)"
+  "C -> (B, 2)"
+  "D -> (B, 3) -> (E, 4) -> (F, 4)"
+  "D"  ->  "F"
+  "A"  ->  "B"
+  "B"  ->  "E"
+  "B"  ->  "C"
+  "B"  ->  "D"
+  10
+  "A B D F"
+  ```
+
+- ```
+  SubwayGraph::PathInfo SubwayGraph::bfs(const QString& start, const QString& end) const
+  {
+      // validate start and end are in graph
+      // to do
+      if (start == end) {
+          PathInfo::Path path;
+          path.push_back(start);
+          return PathInfo(0, path);
+      }
+  
+      // init
+      QHash<QString, bool> visited;
+      // QPair<QString, QString>::second -> QPair<QString, QString>::first
+      QHash<QString, QString> parent;
+      // {parent::item} -> distance
+      QHash<QPair<QString, QString>, int> distances;
+      QQueue<QString> nodeQueue;
+      for (auto station = m_stations.begin(); station != m_stations.end(); ++station) {
+          visited[station.key()] = false;
+      }
+      nodeQueue.push_back(start);
+  
+      while (nodeQueue.isEmpty() != true) {
+          QString node = nodeQueue.front();
+          nodeQueue.pop_front();
+          if (node == end) {
+              const PathInfo& pathInfo = generatePathInfo(start, end, parent, distances);
+              return pathInfo;
+          }
+          // neccesary
+          if (visited[node])
+              continue;
+  
+          visited[node] = true;
+  
+          for (auto edge = m_graph[node].begin(); edge != m_graph[node].end(); ++edge) {
+              if (visited[edge->toNode->param.name]) {
+                  continue;
+              }
+              if (parent.find(edge->toNode->param.name) == parent.end()) {
+                  parent[edge->toNode->param.name] = node;
+              }
+              nodeQueue.push_back(edge->toNode->param.name);          
+              auto nodePair = qMakePair<QString, QString>(node, edge->toNode->param.name);
+              QHash<QPair<QString, QString>, int>::iterator distanceIterator = distances.find(nodePair);
+              if (distanceIterator != distances.end()) {
+                  distanceIterator.value() = edge->distance;
+              }
+              else {
+                  distances[nodePair] = edge->distance;
+              }
+          }
+      }
+  
+      return PathInfo();
+  }
+  ```
+
   

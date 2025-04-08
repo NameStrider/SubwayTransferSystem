@@ -17,8 +17,6 @@ int main(int argc, char *argv[])
 
     loguru::init(argc, argv);
     loguru::add_file("D:\\Qt_Projects\\subway_transfer_system.log", loguru::Append, loguru::Verbosity_MAX);
-    QString err_msg("err_msg");
-    LOG_F(ERROR, err_msg.toStdString().c_str());
 
 #ifdef SUBWAY_GRAPH_TEST
     SubwayGraph::StationNodeParams params;
@@ -126,6 +124,14 @@ int main(int argc, char *argv[])
     QObject::connect(&parser, &JsonParser::parseFinished, &graph, &SubwayGraph::startBuild);
     parser.parse();
     printSubwayGraph(graph);
+    SubwayGraph::PathInfo pathInfo = graph.bfs("A", "F");
+    const SubwayGraph::PathInfo::Path& path = pathInfo.path;
+    qDebug() << pathInfo.totalDistance;
+    QStringList stationList;
+    for (const QString& station : path) {
+        stationList << station;
+    }
+    qDebug() << stationList.join(" ");
 
 #endif
 
