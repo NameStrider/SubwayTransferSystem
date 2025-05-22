@@ -247,6 +247,8 @@ void SubwayGraph::startBuild(const SubwayGraph::LineNames &lineNames
             stationList << station;
         }
         qDebug() << stationList.join(" ");
+
+        emit buildFinished(m_stations, m_lines);
     }
     else {
         qDebug() << err_msg;

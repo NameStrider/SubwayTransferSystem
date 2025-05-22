@@ -124,6 +124,9 @@ public:
 
     PathInfo bfs(const QString& start, const QString& end) const;
 
+signals:
+    void buildFinished(const SubwayGraph::Stations& stations, const SubwayGraph::Lines& lines);
+
 public slots:
     void startBuild(const LineNames& lineNames, const LineDistances& lineDistances, const StationNodeParams& nodeParams);
 
